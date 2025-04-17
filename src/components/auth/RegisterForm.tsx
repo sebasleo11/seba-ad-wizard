@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,8 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Facebook } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
-const RegisterForm: React.FC = () => {
+interface RegisterFormProps {
+  onSuccess?: () => void;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -27,19 +31,39 @@ const RegisterForm: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name
+          }
+        }
+      });
+
+      if (error) throw error;
+
       toast({
         title: "¡Cuenta creada con éxito!",
-        description: "Te redirigiremos al onboarding para configurar tu primera campaña."
+        description: "Te hemos enviado un correo de verificación."
       });
-      navigate('/onboarding');
-    }, 1500);
+
+      if (onSuccess) onSuccess();
+      navigate('/create-ad');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Hubo un problema al crear tu cuenta. Por favor, inténtalo de nuevo.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

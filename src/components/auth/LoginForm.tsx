@@ -1,63 +1,84 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Facebook } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
-const LoginForm: React.FC = () => {
+interface LoginFormProps {
+  onSuccess?: () => void;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "¡Bienvenido!",
+        description: "Has iniciado sesión correctamente."
+      });
+
+      if (onSuccess) onSuccess();
+      navigate('/create-ad');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Credenciales inválidas. Por favor, inténtalo de nuevo.",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
-      // In a real app, we would handle authentication and redirection here
-      window.location.href = '/dashboard';
-    }, 1500);
+    }
   };
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="email">Correo electrónico</Label>
-          <Input 
-            id="email" 
-            type="email" 
-            placeholder="tu@email.com" 
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="password">Contraseña</Label>
-            <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
-          <Input 
-            id="password" 
-            type="password" 
-            placeholder="********" 
+        <div>
+          <Label htmlFor="password">Contraseña</Label>
+          <Input
+            id="password"
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
-
-        <Button className="w-full" type="submit" disabled={loading}>
-          {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
         </Button>
+        <div className="text-center text-sm">
+          <Link to="/forgot-password" className="text-primary hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
       </form>
 
       <div className="relative my-8">

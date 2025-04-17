@@ -7,11 +7,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Pages
 import Index from "./pages/Index";
-import Onboarding from "./pages/Onboarding";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import CreateAd from "./pages/CreateAd";
 import Features from "./pages/Features";
+
+// Components
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -24,11 +28,25 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Index />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/create-ad" element={<CreateAd />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/features" element={<Features />} />
+
+            {/* Protected routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/create-ad" element={
+              <ProtectedRoute>
+                <CreateAd />
+              </ProtectedRoute>
+            } />
+
+            {/* 404 route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

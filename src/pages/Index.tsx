@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -19,7 +18,7 @@ const Index = () => {
             Responde algunas preguntas simples y obtendrás un anuncio personalizado 
             listo para publicar en Facebook Ads.
           </p>
-          <Link to="/create-ad">
+          <Link to="/login">
             <Button size="lg" className="text-lg">
               🚀 Comenzar
             </Button>
