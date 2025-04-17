@@ -47,13 +47,23 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   });
   
   const updateFormData = (section: string, data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        ...data
+    setFormData(prev => {
+      const prevSection = prev[section as keyof typeof prev];
+      if (prevSection && typeof prevSection === 'object') {
+        return {
+          ...prev,
+          [section]: {
+            ...prevSection,
+            ...data
+          }
+        };
+      } else {
+        return {
+          ...prev,
+          [section]: data
+        };
       }
-    }));
+    });
   };
   
   const handleNext = () => {
