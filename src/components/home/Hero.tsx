@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
               SebaAdsPro te guía paso a paso para crear, publicar y optimizar campañas publicitarias en Facebook Ads que realmente funcionan.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              <Link to="/register">
+              <Link to="/dashboard">
                 <Button className="w-full sm:w-auto text-base py-6 px-8">
                   Comenzar ahora
                 </Button>
