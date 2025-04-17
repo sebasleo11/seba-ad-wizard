@@ -18,10 +18,12 @@ const Dashboard = () => {
                 <LineChart className="h-4 w-4 mr-2" />
                 Métricas
               </Button>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo anuncio
-              </Button>
+              <Link to="/create-ad">
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo anuncio
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -65,7 +67,7 @@ const Dashboard = () => {
                 Define a quién mostrar tus anuncios para obtener mejores resultados
               </p>
             </div>
-            <Link to="/audience">
+            <Link to="/create-ad">
               <Button variant="outline" className="w-full">
                 Definir audiencia
               </Button>

@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import CreateAd from "./pages/CreateAd";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/create-ad" element={<CreateAd />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
