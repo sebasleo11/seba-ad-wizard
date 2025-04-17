@@ -19,11 +19,8 @@ const Header: React.FC = () => {
           <Link to="/features" className="text-gray-700 hover:text-primary font-medium">Funcionalidades</Link>
           <Link to="/pricing" className="text-gray-700 hover:text-primary font-medium">Precios</Link>
           <Link to="/contact" className="text-gray-700 hover:text-primary font-medium">Contacto</Link>
-          <Link to="/login">
-            <Button variant="outline" className="mr-2">Iniciar sesión</Button>
-          </Link>
-          <Link to="/register">
-            <Button>Registrarse</Button>
+          <Link to="/dashboard">
+            <Button>Ingresar</Button>
           </Link>
         </nav>
 
@@ -42,14 +39,9 @@ const Header: React.FC = () => {
             <Link to="/features" className="text-gray-700 hover:text-primary font-medium py-2">Funcionalidades</Link>
             <Link to="/pricing" className="text-gray-700 hover:text-primary font-medium py-2">Precios</Link>
             <Link to="/contact" className="text-gray-700 hover:text-primary font-medium py-2">Contacto</Link>
-            <div className="flex flex-col space-y-2">
-              <Link to="/login" className="w-full">
-                <Button variant="outline" className="w-full">Iniciar sesión</Button>
-              </Link>
-              <Link to="/register" className="w-full">
-                <Button className="w-full">Registrarse</Button>
-              </Link>
-            </div>
+            <Link to="/dashboard" className="w-full">
+              <Button className="w-full">Ingresar</Button>
+            </Link>
           </div>
         </div>
       )}
