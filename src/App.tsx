@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -12,6 +11,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import CreateAd from "./pages/CreateAd";
+import Features from "./pages/Features";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -28,6 +28,7 @@ const App = () => {
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/create-ad" element={<CreateAd />} />
+            <Route path="/features" element={<Features />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
