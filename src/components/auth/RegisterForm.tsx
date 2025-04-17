@@ -91,7 +91,7 @@ const RegisterForm: React.FC = () => {
             name="agreeTerms"
             checked={formData.agreeTerms}
             onCheckedChange={(checked: boolean) => {
-              setFormData(prev => ({ ...prev, agreeTerms: checked });
+              setFormData(prev => ({ ...prev, agreeTerms: checked }));
             }}
             required
           />
