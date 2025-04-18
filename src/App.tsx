@@ -14,7 +14,7 @@ import NotFound from "./pages/NotFound";
 import CreateAd from "./pages/CreateAd";
 import Features from "./pages/Features";
 import Precios from './pages/Precios'
-
+import Contacto from './pages/Contacto'
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -36,6 +36,8 @@ const App = () => {
             <Route path="/features" element={<Features />} />
             <Route path="/precios" element={<Precios />} />
             <Route path="/pricing" element={<Precios />} />
+            <Route path="/contacto" element={<Contacto />} />
+            <Route path="/contact" element={<Contacto />} />
             {/* Protected routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
