@@ -16,6 +16,8 @@ import Features from "./pages/Features";
 import Precios from './pages/Precios'
 import Contacto from './pages/Contacto'
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
+import Terminos from "./pages/Terminos";
+
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -40,7 +42,11 @@ const App = () => {
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/contact" element={<Contacto />} />
             <Route path="/privacidad" element={<PoliticaPrivacidad />} />
-            <Route path="/privacy-policy" element={<PoliticaPrivacidad />} />
+            <Route path="/privacy-policy" element={<PoliticaPrivacidad />} /> 
+            <Route path="/terminos" element={<Terminos />} /> 
+            <Route path="/terms-of-service" element={<Terminos />} />
+
+            
             {/* Protected routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
