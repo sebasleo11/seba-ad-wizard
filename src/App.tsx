@@ -17,6 +17,13 @@ import Precios from './pages/Precios'
 import Contacto from './pages/Contacto'
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import Terminos from "./pages/Terminos";
+import SebabotChat from "./components/SebabotChat";
+
+
+
+<SebabotChat />
+
+
 
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -59,9 +66,11 @@ const App = () => {
               </ProtectedRoute>
             } />
 
+             
             {/* 404 route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <SebabotChat />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
