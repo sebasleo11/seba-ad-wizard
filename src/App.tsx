@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import CreateAd from "./pages/CreateAd";
 import Features from "./pages/Features";
+import Precios from './pages/Precios'
 
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -33,7 +34,8 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/features" element={<Features />} />
-
+            <Route path="/precios" element={<Precios />} />
+            <Route path="/pricing" element={<Precios />} />
             {/* Protected routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
