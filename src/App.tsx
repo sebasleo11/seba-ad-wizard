@@ -15,6 +15,7 @@ import CreateAd from "./pages/CreateAd";
 import Features from "./pages/Features";
 import Precios from './pages/Precios'
 import Contacto from './pages/Contacto'
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -38,6 +39,8 @@ const App = () => {
             <Route path="/pricing" element={<Precios />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/contact" element={<Contacto />} />
+            <Route path="/privacidad" element={<PoliticaPrivacidad />} />
+            <Route path="/privacy-policy" element={<PoliticaPrivacidad />} />
             {/* Protected routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>

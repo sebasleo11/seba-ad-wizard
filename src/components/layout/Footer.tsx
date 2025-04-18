@@ -9,31 +9,57 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="flex items-center mb-4">
-              <span className="text-2xl font-heading font-bold text-primary">Seba<span className="text-gray-800">Ads</span><span className="text-facebook">Pro</span></span>
+              <span className="text-2xl font-heading font-bold text-primary">
+                Seba
+                <span className="text-gray-800">Ads</span>Pro
+              </span>
             </Link>
             <p className="text-gray-600 mb-6 max-w-md">
-              Plataforma intuitiva para emprendedores que desean crear y gestionar campañas publicitarias en Facebook Ads sin conocimientos técnicos.
+              Plataforma intuitiva para emprendedores que desean crear y
+              gestionar campañas publicitarias en Facebook Ads sin conocimientos técnicos.
             </p>
           </div>
 
           <div>
             <h3 className="font-heading font-semibold text-lg mb-4">Enlaces rápidos</h3>
             <ul className="space-y-3">
-              <li><Link to="/features" className="text-gray-600 hover:text-primary">Funcionalidades</Link></li>
-              <li><Link to="/pricing" className="text-gray-600 hover:text-primary">Precios</Link></li>
-              <li><Link to="/contact" className="text-gray-600 hover:text-primary">Contacto</Link></li>
+              <li>
+                <Link to="/features" className="text-gray-600 hover:text-primary">Funcionalidades</Link>
+              </li>
+              <li>
+                <Link to="/pricing" className="text-gray-600 hover:text-primary">Precios</Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-gray-600 hover:text-primary">Contacto</Link>
+              </li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-heading font-semibold text-lg mb-4">Legal</h3>
             <ul className="space-y-3">
-              <li><Link to="/privacy" className="text-gray-600 hover:text-primary">Política de privacidad</Link></li>
-              <li><Link to="/terms" className="text-gray-600 hover:text-primary">Términos de servicio</Link></li>
+              <li>
+                <Link to="/privacidad" className="text-gray-600 hover:text-primary">
+                  Política de privacidad
+                </Link>
+                <span className="mx-2 text-gray-400">|</span>
+                <Link to="/privacy-policy" className="text-gray-600 hover:text-primary">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terminos" className="text-gray-600 hover:text-primary">
+                  Términos y condiciones
+                </Link>
+                <span className="mx-2 text-gray-400">|</span>
+                <Link to="/terms-of-service" className="text-gray-600 hover:text-primary">
+                  Terms of Service
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t border-gray-200 mt-12 pt-6">
           <p className="text-center text-gray-500 text-sm">
             © {new Date().getFullYear()} SebaAdsPro. Todos los derechos reservados.
@@ -45,3 +71,4 @@ const Footer: React.FC = () => {
 };
 
 export default Footer;
+
