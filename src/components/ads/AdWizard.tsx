@@ -117,12 +117,18 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <BusinessInfoStep 
-            data={formData.business} 
-            updateData={(data) => updateFormData('business', data)} 
-          />
-        );
+  return (
+    <>
+      <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
+        💡 Sebabot: Contame sobre tu negocio. Esto me va a ayudar a crear una campaña más efectiva. ¡No te preocupes, vamos paso a paso!
+      </p>
+      <BusinessInfoStep
+        data={formData.business}
+        updateData={(data) => updateFormData('business', data)}
+      />
+    </>
+  );
+
       case 2:
         return (
           <CampaignObjectiveStep 
