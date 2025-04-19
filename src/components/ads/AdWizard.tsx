@@ -146,13 +146,19 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
 
 
   
-      case 3:
-        return (
-          <TargetAudienceStep 
-            data={formData.audience} 
-            updateData={(data) => updateFormData('audience', data)} 
-          />
-        );
+  case 3:
+    return (
+      <>
+        <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
+          💡 Sebabot: Completá los datos de tu audiencia ideal. Esto nos ayuda a mostrar tu anuncio a las personas correctas.
+        </p>
+        <TargetAudienceStep
+          data={formData.audience}
+          updateData={(data) => updateFormData('audience', data)}
+        />
+      </>
+    );
+  
       case 4:
         return (
           <BudgetStep 
