@@ -129,13 +129,23 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
     </>
   );
 
-      case 2:
-        return (
-          <CampaignObjectiveStep 
-            objective={formData.objective} 
-            updateObjective={(objective) => setFormData({...formData, objective})} 
-          />
-        );
+  case 2:
+  return (
+    <>
+      <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
+        💡 Sebabot: Elegí el objetivo de tu campaña. Si querés vender, seleccioná <strong>"Ventas"</strong>.
+      </p>
+      <CampaignObjectiveStep
+        objective={formData.objective}
+        updateObjective={(data) => updateFormData('objective', data)}
+      />
+    </>
+  );
+
+
+
+
+  
       case 3:
         return (
           <TargetAudienceStep 
