@@ -4,13 +4,11 @@ import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import BusinessInfoStep from './steps/BusinessInfoStep';
 import CampaignObjectiveStep from './steps/CampaignObjectiveStep.tsx';
-
 import TargetAudienceStep from './steps/TargetAudienceStep';
 import BudgetStep from './steps/BudgetStep';
 import AdContentStep from './steps/AdContentStep';
 import { generateAdCopy } from '@/lib/adGenerator';
 import { useToast } from '@/hooks/use-toast';
-import { generarCopyEImagen } from '@/lib/generadorIA';
 
 interface AdWizardProps {
   onComplete: (data: any) => void;
@@ -41,11 +39,16 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
       customText: '',
       image: null,
       imageUrl: '',
+      generatedCopies: ['', ''],
+      generatedImages: ['', ''],
       destinationType: 'website',
       destinationUrl: '',
-      cta: 'Más info'
+      cta: 'Más info',
+      imageWithText: false
     }
   });
+
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const updateFormData = (section: string, data: any) => {
     setFormData(prev => {
@@ -77,6 +80,7 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   };
 
   const generarCopyEImagen = async () => {
+    setIsGenerating(true);
     try {
       const response = await fetch("https://leo11.app.n8n.cloud/webhook/crear-copy-imagen", {
         method: "POST",
@@ -88,9 +92,14 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
           objetivo: formData.objective,
           ubicacion: formData.audience.location,
           edad: formData.audience.ageRange,
-          intereses: formData.audience.interests
+          intereses: formData.audience.interests,
+          imageWithText: formData.content.imageWithText
         })
       });
+
+      if (!response.ok) {
+        throw new Error('Error en la respuesta del servidor');
+      }
 
       const data = await response.json();
 
@@ -98,13 +107,25 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
         ...prev,
         content: {
           ...prev.content,
-          generatedText: data.copy,
-          imageUrl: data.imageUrl
+          generatedCopies: [data.copy1, data.copy2],
+          generatedImages: [data.img1, data.img2]
         }
       }));
 
+      toast({
+        title: "¡Contenido generado!",
+        description: "Revisá las opciones generadas por IA",
+      });
+
     } catch (error) {
       console.error("Error al generar anuncio:", error);
+      toast({
+        title: "Error",
+        description: "No pudimos generar el contenido. Por favor, intentá de nuevo.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -194,13 +215,9 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
               data={formData.content}
               businessData={formData.business}
               updateData={(data) => updateFormData('content', data)}
+              onGenerate={generarCopyEImagen}
+              isGenerating={isGenerating}
             />
-            <button
-              onClick={generarCopyEImagen}
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              🚀 Generar anuncio con IA
-            </button>
           </>
         );
       default:
