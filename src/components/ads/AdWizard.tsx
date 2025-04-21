@@ -1,15 +1,16 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import BusinessInfoStep from './steps/BusinessInfoStep';
-import CampaignObjectiveStep from './steps/CampaignObjectiveStep';
+import CampaignObjectiveStep from './steps/CampaignObjectiveStep.tsx';
+
 import TargetAudienceStep from './steps/TargetAudienceStep';
 import BudgetStep from './steps/BudgetStep';
 import AdContentStep from './steps/AdContentStep';
 import { generateAdCopy } from '@/lib/adGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { generarCopyEImagen } from '@/lib/generadorIA';
 
 interface AdWizardProps {
   onComplete: (data: any) => void;
@@ -19,13 +20,13 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 5;
-  
+
   const [formData, setFormData] = useState({
     business: {
       type: '',
       name: '',
-      description: '',
-      socialLinks: ''
+      socialLinks: '',
+      description: ''
     },
     objective: '',
     audience: {
@@ -45,7 +46,7 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
       cta: 'Más info'
     }
   });
-  
+
   const updateFormData = (section: string, data: any) => {
     setFormData(prev => {
       const prevSection = prev[section as keyof typeof prev];
@@ -65,7 +66,7 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
       }
     });
   };
-  
+
   const handleNext = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -74,112 +75,139 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
       finalizeAd();
     }
   };
-  
+
+  const generarCopyEImagen = async () => {
+    try {
+      const response = await fetch("https://leo11.app.n8n.cloud/webhook/crear-copy-imagen", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          producto: formData.business.name,
+          objetivo: formData.objective,
+          ubicacion: formData.audience.location,
+          edad: formData.audience.ageRange,
+          intereses: formData.audience.interests
+        })
+      });
+
+      const data = await response.json();
+
+      setFormData((prev) => ({
+        ...prev,
+        content: {
+          ...prev.content,
+          generatedText: data.copy,
+          imageUrl: data.imageUrl
+        }
+      }));
+
+    } catch (error) {
+      console.error("Error al generar anuncio:", error);
+    }
+  };
+
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
       window.scrollTo(0, 0);
     }
   };
-  
+
   const finalizeAd = () => {
-    // Show loading toast
     toast({
       title: "Generando tu kit de campaña",
       description: "Estamos procesando tu información..."
     });
-    
-    // Generate ad copy if auto-generate is selected
-    const adCopy = formData.content.autoGenerateText 
+
+    const adCopy = formData.content.autoGenerateText
       ? generateAdCopy(formData)
       : formData.content.customText;
-    
-    // Generate a sample image URL if no image is provided
-    const imageUrl = formData.content.imageUrl || 
+
+    const imageUrl = formData.content.imageUrl ||
       `https://source.unsplash.com/random/800x600/?${formData.business.type},${formData.audience.interests}`;
-    
-    // Create the final campaign data object
+
     setTimeout(() => {
       const finalCampaignData = {
         ...formData,
         content: {
           ...formData.content,
-          generatedText: adCopy,
+          adText: adCopy,
           imageUrl
         },
         createdAt: new Date().toISOString()
       };
-      
       onComplete(finalCampaignData);
     }, 1500);
   };
-  
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-  return (
-    <>
-      <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
-        💡 Sebabot: Contame sobre tu negocio. Esto me va a ayudar a crear una campaña más efectiva. ¡No te preocupes, vamos paso a paso!
-      </p>
-      <BusinessInfoStep
-        data={formData.business}
-        updateData={(data) => updateFormData('business', data)}
-      />
-    </>
-  );
-
-  case 2:
-  return (
-    <>
-      <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
-        💡 Sebabot: Elegí el objetivo de tu campaña. Si querés vender, seleccioná <strong>"Ventas"</strong>.
-      </p>
-      <CampaignObjectiveStep
-        objective={formData.objective}
-        updateObjective={(data) => updateFormData('objective', data)}
-      />
-    </>
-  );
-
-
-
-
-  
-  case 3:
-    return (
-      <>
-        <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
-          💡 Sebabot: Completá los datos de tu audiencia ideal. Esto nos ayuda a mostrar tu anuncio a las personas correctas.
-        </p>
-        <TargetAudienceStep
-          data={formData.audience}
-          updateData={(data) => updateFormData('audience', data)}
-        />
-      </>
-    );
-  
+        return (
+          <>
+            <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
+              🔹 Sebabot: Contame sobre tu negocio. Esto me va a ayudar a crear una campaña más efectiva.
+            </p>
+            <BusinessInfoStep
+              data={formData.business}
+              updateData={(data) => updateFormData('business', data)}
+            />
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
+              🔹 Sebabot: Elegí el objetivo de tu campaña. Si querés vender, seleccioná <strong>"Ventas"</strong>
+            </p>
+            <CampaignObjectiveStep
+              objective={formData.objective}
+              updateObjective={(data) => updateFormData('objective', data)}
+            />
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
+              🔹 Sebabot: Completá los datos de tu audiencia ideal. Esto nos ayuda a mostrar tu anuncio a las personas correctas.
+            </p>
+            <TargetAudienceStep
+              data={formData.audience}
+              updateData={(data) => updateFormData('audience', data)}
+            />
+          </>
+        );
       case 4:
         return (
-          <BudgetStep 
-            budget={formData.budget} 
-            updateBudget={(budget) => setFormData({...formData, budget})} 
+          <BudgetStep
+            budget={formData.budget}
+            updateBudget={(budget) => setFormData({ ...formData, budget })}
           />
         );
       case 5:
         return (
-          <AdContentStep 
-            data={formData.content} 
-            businessData={formData.business}
-            updateData={(data) => updateFormData('content', data)} 
-          />
+          <>
+            <AdContentStep
+              data={formData.content}
+              businessData={formData.business}
+              updateData={(data) => updateFormData('content', data)}
+            />
+            <button
+              onClick={generarCopyEImagen}
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              🚀 Generar anuncio con IA
+            </button>
+          </>
         );
       default:
         return null;
     }
   };
-  
-  // Determine if the current step is valid
+
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
@@ -203,15 +231,13 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
       <div className="mb-8">
         <div className="flex justify-between mb-2 text-sm">
           <span className="font-medium text-primary">Paso {currentStep} de {totalSteps}</span>
-          <span className="font-medium">{Math.round((currentStep / totalSteps) * 100)}% completado</span>
+          <span className="font-medium text-muted-foreground">{(currentStep / totalSteps) * 100}% completado</span>
         </div>
         <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
       </div>
-      
       <div className="min-h-[420px]">
         {renderStep()}
       </div>
-      
       <div className="mt-8 pt-6 border-t flex justify-between">
         {currentStep > 1 ? (
           <Button variant="outline" onClick={handlePrevious}>
@@ -220,12 +246,11 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
         ) : (
           <div></div>
         )}
-        
-        <Button 
-          onClick={handleNext} 
+        <Button
+          onClick={handleNext}
           disabled={!isStepValid()}
         >
-          {currentStep < totalSteps ? 'Continuar' : 'Finalizar'} 
+          {currentStep < totalSteps ? 'Continuar' : 'Finalizar'}
           {currentStep < totalSteps && <ArrowRight className="ml-2 h-4 w-4" />}
         </Button>
       </div>
@@ -234,3 +259,4 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
 };
 
 export default AdWizard;
+

@@ -17,13 +17,6 @@ import Precios from './pages/Precios'
 import Contacto from './pages/Contacto'
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import Terminos from "./pages/Terminos";
-import SebabotChat from "./components/SebabotChat";
-
-
-
-<SebabotChat />
-
-
 
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -53,7 +46,6 @@ const App = () => {
             <Route path="/terminos" element={<Terminos />} /> 
             <Route path="/terms-of-service" element={<Terminos />} />
 
-            
             {/* Protected routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
@@ -66,11 +58,9 @@ const App = () => {
               </ProtectedRoute>
             } />
 
-             
             {/* 404 route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <SebabotChat />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
