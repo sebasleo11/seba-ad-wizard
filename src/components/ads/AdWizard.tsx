@@ -29,9 +29,9 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
     objective: '',
     audience: {
       location: '',
-      ageRange: '',
+      ageRanges: [],
       interests: '',
-      gender: 'all'
+      genders: []
     },
     budget: 10,
     content: {
@@ -82,6 +82,10 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   const generarCopyEImagen = async () => {
     setIsGenerating(true);
     try {
+      if (!formData.business.name || !formData.objective || !formData.audience.location || !formData.audience.ageRanges || !formData.audience.interests) {
+        throw new Error('Faltan datos requeridos para generar el contenido');
+      }
+
       const response = await fetch("https://leo11.app.n8n.cloud/webhook/crear-copy-imagen", {
         method: "POST",
         headers: {
@@ -91,17 +95,23 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
           producto: formData.business.name,
           objetivo: formData.objective,
           ubicacion: formData.audience.location,
-          edad: formData.audience.ageRange,
+          edad: formData.audience.ageRanges,
           intereses: formData.audience.interests,
-          imageWithText: formData.content.imageWithText
+          imageWithText: formData.content.imageWithText,
+          descripcion: formData.business.description || '',
+          categoria: formData.business.type || ''
         })
       });
 
       if (!response.ok) {
-        throw new Error('Error en la respuesta del servidor');
+        throw new Error(`Error en la respuesta del servidor: ${response.status}`);
       }
 
       const data = await response.json();
+
+      if (!data.copy1 || !data.copy2 || !data.img1 || !data.img2) {
+        throw new Error('La respuesta del servidor no contiene todos los datos necesarios');
+      }
 
       setFormData((prev) => ({
         ...prev,
@@ -119,9 +129,19 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
 
     } catch (error) {
       console.error("Error al generar anuncio:", error);
+      
+      setFormData((prev) => ({
+        ...prev,
+        content: {
+          ...prev.content,
+          generatedCopies: ['', ''],
+          generatedImages: ['', '']
+        }
+      }));
+
       toast({
         title: "Error",
-        description: "No pudimos generar el contenido. Por favor, intentá de nuevo.",
+        description: error instanceof Error ? error.message : "No pudimos generar el contenido. Por favor, intentá de nuevo.",
         variant: "destructive"
       });
     } finally {
@@ -167,39 +187,24 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
     switch (currentStep) {
       case 1:
         return (
-          <>
-            <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
-              🔹 Sebabot: Contame sobre tu negocio. Esto me va a ayudar a crear una campaña más efectiva.
-            </p>
-            <BusinessInfoStep
-              data={formData.business}
-              updateData={(data) => updateFormData('business', data)}
-            />
-          </>
+          <BusinessInfoStep
+            data={formData.business}
+            updateData={(data) => updateFormData('business', data)}
+          />
         );
       case 2:
         return (
-          <>
-            <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
-              🔹 Sebabot: Elegí el objetivo de tu campaña. Si querés vender, seleccioná <strong>"Ventas"</strong>
-            </p>
-            <CampaignObjectiveStep
-              objective={formData.objective}
-              updateObjective={(data) => updateFormData('objective', data)}
-            />
-          </>
+          <CampaignObjectiveStep
+            objective={formData.objective}
+            updateObjective={(data) => updateFormData('objective', data)}
+          />
         );
       case 3:
         return (
-          <>
-            <p className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg shadow-sm mt-4">
-              🔹 Sebabot: Completá los datos de tu audiencia ideal. Esto nos ayuda a mostrar tu anuncio a las personas correctas.
-            </p>
-            <TargetAudienceStep
-              data={formData.audience}
-              updateData={(data) => updateFormData('audience', data)}
-            />
-          </>
+          <TargetAudienceStep
+            data={formData.audience}
+            updateData={(data) => updateFormData('audience', data)}
+          />
         );
       case 4:
         return (
@@ -210,15 +215,15 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
         );
       case 5:
         return (
-          <>
-            <AdContentStep
-              data={formData.content}
-              businessData={formData.business}
-              updateData={(data) => updateFormData('content', data)}
-              onGenerate={generarCopyEImagen}
-              isGenerating={isGenerating}
-            />
-          </>
+          <AdContentStep
+            data={formData.content}
+            businessData={formData.business}
+            updateData={(data) => updateFormData('content', data)}
+            onGenerate={generarCopyEImagen}
+            isGenerating={isGenerating}
+            onBack={handlePrevious}
+            onFinish={finalizeAd}
+          />
         );
       default:
         return null;
@@ -232,7 +237,7 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
       case 2:
         return !!formData.objective;
       case 3:
-        return formData.audience.location && formData.audience.ageRange && formData.audience.interests;
+        return formData.audience.location && formData.audience.ageRanges && formData.audience.interests;
       case 4:
         return formData.budget > 0;
       case 5:
