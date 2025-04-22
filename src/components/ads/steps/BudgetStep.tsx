@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -9,10 +8,44 @@ interface BudgetStepProps {
   updateBudget: (budget: number) => void;
 }
 
+interface Estimates {
+  dailyReach: { min: number; max: number };
+  dailyClicks: { min: number; max: number };
+  dailyConversions: { min: number; max: number };
+}
+
 const BudgetStep: React.FC<BudgetStepProps> = ({ budget, updateBudget }) => {
+  // Estado local para las estimaciones
+  const [estimates, setEstimates] = useState<Estimates>({
+    dailyReach: { min: 0, max: 0 },
+    dailyClicks: { min: 0, max: 0 },
+    dailyConversions: { min: 0, max: 0 }
+  });
+
+  // Función para calcular estimaciones
+  const calculateEstimates = (currentBudget: number): Estimates => ({
+    dailyReach: {
+      min: Math.round(currentBudget * 150),
+      max: Math.round(currentBudget * 300)
+    },
+    dailyClicks: {
+      min: Math.round(currentBudget * 3),
+      max: Math.round(currentBudget * 6)
+    },
+    dailyConversions: {
+      min: Math.round(currentBudget * 0.3),
+      max: Math.round(currentBudget * 0.8)
+    }
+  });
+
+  // Actualizar estimaciones cuando cambia el presupuesto
+  useEffect(() => {
+    setEstimates(calculateEstimates(budget));
+  }, [budget]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
-    if (!isNaN(value) && value >= 1 && value <= 100) {
+    if (!isNaN(value) && value >= 5 && value <= 100) {
       updateBudget(value);
     }
   };
@@ -27,8 +60,12 @@ const BudgetStep: React.FC<BudgetStepProps> = ({ budget, updateBudget }) => {
       <div className="space-y-8">
         <div>
           <div className="flex justify-between items-center mb-4">
-            <Label htmlFor="budget-input" className="text-lg font-medium">USD ${budget} por día</Label>
-            <span className="text-gray-500">≈ USD ${(budget * 30).toFixed(2)} por mes</span>
+            <Label htmlFor="budget-input" className="text-lg font-medium">
+              USD ${budget} por día
+            </Label>
+            <span className="text-gray-500">
+              ≈ USD ${(budget * 30).toFixed(2)} por mes
+            </span>
           </div>
           
           <div className="flex items-center gap-4 mb-6">
@@ -57,20 +94,26 @@ const BudgetStep: React.FC<BudgetStepProps> = ({ budget, updateBudget }) => {
           </div>
         </div>
 
-        <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
+        <div>
           <h3 className="font-medium mb-3">Con este presupuesto podrás obtener aproximadamente:</h3>
           <ul className="space-y-3">
             <li className="flex justify-between items-center">
               <span className="text-gray-700">Alcance diario:</span>
-              <span className="font-medium">{Math.round(budget * 150)} - {Math.round(budget * 300)} personas</span>
+              <span className="font-medium">
+                {estimates.dailyReach.min} - {estimates.dailyReach.max} personas
+              </span>
             </li>
             <li className="flex justify-between items-center">
               <span className="text-gray-700">Clics estimados:</span>
-              <span className="font-medium">{Math.round(budget * 3)} - {Math.round(budget * 6)} por día</span>
+              <span className="font-medium">
+                {estimates.dailyClicks.min} - {estimates.dailyClicks.max} por día
+              </span>
             </li>
             <li className="flex justify-between items-center">
               <span className="text-gray-700">Conversiones potenciales:</span>
-              <span className="font-medium">{Math.round(budget * 0.3)} - {Math.round(budget * 0.8)} por día</span>
+              <span className="font-medium">
+                {estimates.dailyConversions.min} - {estimates.dailyConversions.max} por día
+              </span>
             </li>
           </ul>
           <p className="text-xs text-gray-500 mt-3">
