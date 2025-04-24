@@ -241,6 +241,47 @@ const AdContentStep: React.FC<AdContentStepProps> = ({ data, businessData, updat
         </div>
       )}
 
+      {/* Sección de subida manual de imagen */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="font-medium">Subir imagen manualmente</Label>
+        </div>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              id="image-upload"
+            />
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById('image-upload')?.click()}
+              className="w-full sm:w-auto"
+            >
+              <Image className="w-4 h-4 mr-2" />
+              Subir imagen
+            </Button>
+          </div>
+          
+          {previewUrl && (
+            <div className="mt-4">
+              <div className="relative aspect-video w-full max-w-2xl mx-auto">
+                <img
+                  src={previewUrl}
+                  alt="Vista previa de la imagen"
+                  className="object-cover rounded-lg w-full h-full"
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2 text-center">
+                Vista previa de la imagen seleccionada
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {data.autoGenerateText && data.generatedCopies.length > 0 && !data.imageWithText && (
         <div className="space-y-6">
           <div className="space-y-4">

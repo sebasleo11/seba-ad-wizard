@@ -3,12 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import BusinessInfoStep from './steps/BusinessInfoStep';
-import CampaignObjectiveStep from './steps/CampaignObjectiveStep.tsx';
+import CampaignObjectiveStep from './steps/CampaignObjectiveStep';
 import TargetAudienceStep from './steps/TargetAudienceStep';
 import BudgetStep from './steps/BudgetStep';
 import AdContentStep from './steps/AdContentStep';
+import FinalStep from './steps/FinalStep';
 import { generateAdCopy } from '@/lib/adGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AdWizardProps {
   onComplete: (data: any) => void;
@@ -16,8 +18,10 @@ interface AdWizardProps {
 
 const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 5;
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     business: {
@@ -156,34 +160,59 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
     }
   };
 
-  const finalizeAd = () => {
-    toast({
-      title: "Generando tu kit de campaña",
-      description: "Estamos procesando tu información..."
-    });
+  const finalizeAd = async () => {
+    try {
+      // Generar el copy y la imagen
+      const adCopy = await generateAdCopy(formData);
+      const imageUrl = formData.content.imageUrl || 
+        `https://source.unsplash.com/random/800x600/?${formData.business.type},${formData.audience.interests}`;
 
-    const adCopy = formData.content.autoGenerateText
-      ? generateAdCopy(formData)
-      : formData.content.customText;
-
-    const imageUrl = formData.content.imageUrl ||
-      `https://source.unsplash.com/random/800x600/?${formData.business.type},${formData.audience.interests}`;
-
-    setTimeout(() => {
+      // Crear el objeto final de la campaña
       const finalCampaignData = {
-        ...formData,
-        content: {
-          ...formData.content,
-          adText: adCopy,
-          imageUrl
+        objective: formData.objective,
+        budget: formData.budget,
+        audience: {
+          location: formData.audience.location,
+          ageRanges: formData.audience.ageRanges,
+          interests: formData.audience.interests,
+          genders: formData.audience.genders
         },
-        createdAt: new Date().toISOString()
+        content: {
+          autoGenerateText: formData.content.autoGenerateText,
+          customText: adCopy,
+          imageUrl: imageUrl,
+          cta: formData.content.cta,
+          destinationType: formData.content.destinationType,
+          destinationUrl: formData.content.destinationUrl
+        }
       };
-      onComplete(finalCampaignData);
-    }, 1500);
+
+      // Guardar en localStorage como backup
+      localStorage.setItem('campaignData', JSON.stringify(finalCampaignData));
+
+      // Navegar a la pantalla de éxito con los datos
+      navigate('/success', { state: { data: finalCampaignData } });
+    } catch (error) {
+      console.error('Error al finalizar la campaña:', error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al generar tu campaña. Por favor, intentá de nuevo.",
+        variant: "destructive"
+      });
+    }
   };
 
   const renderStep = () => {
+    if (showSuccess) {
+      return (
+        <FinalStep
+          data={formData}
+          updateData={updateFormData}
+          onBack={() => setShowSuccess(false)}
+        />
+      );
+    }
+
     switch (currentStep) {
       case 1:
         return (
@@ -249,33 +278,36 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-      <div className="mb-8">
-        <div className="flex justify-between mb-2 text-sm">
-          <span className="font-medium text-primary">Paso {currentStep} de {totalSteps}</span>
-          <span className="font-medium text-muted-foreground">{(currentStep / totalSteps) * 100}% completado</span>
-        </div>
-        <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
-      </div>
-      <div className="min-h-[420px]">
-        {renderStep()}
-      </div>
-      <div className="mt-8 pt-6 border-t flex justify-between">
-        {currentStep > 1 ? (
-          <Button variant="outline" onClick={handlePrevious}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Atrás
-          </Button>
-        ) : (
-          <div></div>
-        )}
-        <Button
-          onClick={handleNext}
-          disabled={!isStepValid()}
-        >
-          {currentStep < totalSteps ? 'Continuar' : 'Finalizar'}
-          {currentStep < totalSteps && <ArrowRight className="ml-2 h-4 w-4" />}
-        </Button>
-      </div>
+    <div className="space-y-8">
+      {!showSuccess && (
+        <>
+          <Progress value={(currentStep / totalSteps) * 100} className="w-full" />
+          <div className="flex justify-between items-center">
+            {currentStep > 1 && (
+              <Button
+                variant="outline"
+                onClick={handlePrevious}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Atrás
+              </Button>
+            )}
+            <div className="flex-1" />
+            {currentStep < totalSteps && (
+              <Button
+                onClick={handleNext}
+                disabled={!isStepValid()}
+                className="flex items-center gap-2"
+              >
+                Siguiente
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </>
+      )}
+      {renderStep()}
     </div>
   );
 };

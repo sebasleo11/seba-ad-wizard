@@ -17,6 +17,9 @@ import Precios from './pages/Precios'
 import Contacto from './pages/Contacto'
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import Terminos from "./pages/Terminos";
+import CampaignSuccess from "./components/ads/CampaignSuccess";
+
+
 
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -55,6 +58,11 @@ const App = () => {
             <Route path="/create-ad" element={
               <ProtectedRoute>
                 <CreateAd />
+              </ProtectedRoute>
+            } />
+            <Route path="/success" element={
+              <ProtectedRoute>
+                <CampaignSuccess />
               </ProtectedRoute>
             } />
 
