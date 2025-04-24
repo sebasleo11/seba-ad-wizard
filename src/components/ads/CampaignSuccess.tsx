@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Download, Mail, RefreshCw, Image as ImageIcon, Target, DollarSign, MapPin, Users, Calendar, Brain } from 'lucide-react';
+import { 
+  Home, Download, Mail, RefreshCw, Image as ImageIcon, 
+  Target, DollarSign, MapPin, Users, Calendar, Brain,
+  Facebook, Instagram, Youtube
+} from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import jsPDF from 'jspdf';
 
@@ -17,12 +21,20 @@ interface CampaignData {
   content: {
     autoGenerateText: boolean;
     customText: string;
-    imageUrl: string;
+    imageUrl: string | File;
     cta: string;
     destinationType: string;
     destinationUrl: string;
   };
 }
+
+type FormatType = 'facebook' | 'instagram' | 'shorts';
+
+const formatDimensions = {
+  facebook: { width: 1200, height: 628 },
+  instagram: { width: 1080, height: 1080 },
+  shorts: { width: 1080, height: 1920 }
+};
 
 const CampaignSuccess: React.FC = () => {
   const navigate = useNavigate();
@@ -31,6 +43,9 @@ const CampaignSuccess: React.FC = () => {
   const [campaignData, setCampaignData] = useState<CampaignData | null>(null);
   const [imageError, setImageError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [selectedFormat, setSelectedFormat] = useState<FormatType>('facebook');
+  const [generationAttemptsLeft, setGenerationAttemptsLeft] = useState(2);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const stateData = location.state?.data;
@@ -137,6 +152,66 @@ const CampaignSuccess: React.FC = () => {
     navigate('/create-ad');
   };
 
+  const handleGenerateImage = async () => {
+    if (generationAttemptsLeft <= 0) {
+      toast({
+        title: "Límite alcanzado",
+        description: "Has alcanzado el límite de generaciones de imágenes",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Simular generación de imagen
+      setGenerationAttemptsLeft(prev => prev - 1);
+      toast({
+        title: "Generando imagen",
+        description: "Estamos creando una nueva imagen para tu anuncio",
+      });
+      
+      // Aquí iría la llamada real a la API
+      // const response = await fetch('/api/generate-image', {...});
+      // const newImageUrl = await response.json();
+      // setImageUrl(newImageUrl);
+      
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No pudimos generar una nueva imagen",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadImage = () => {
+    if (!imageRef.current || !imageUrl) return;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const { width, height } = formatDimensions[selectedFormat];
+    canvas.width = width;
+    canvas.height = height;
+
+    // Dibujar la imagen en el canvas con el formato seleccionado
+    ctx.drawImage(imageRef.current, 0, 0, width, height);
+
+    // Convertir a blob y descargar
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `anuncio-${selectedFormat}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+
   if (!campaignData) {
     return null;
   }
@@ -158,25 +233,49 @@ const CampaignSuccess: React.FC = () => {
           {/* Vista previa del anuncio */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
-              {/* Encabezado del anuncio */}
+              {/* Selector de formato */}
               <div className="p-4 border-b border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">SA</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Seba Ads Pro</h3>
-                    <p className="text-sm text-gray-500">Anuncio patrocinado</p>
-                  </div>
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant={selectedFormat === 'facebook' ? 'default' : 'outline'}
+                    onClick={() => setSelectedFormat('facebook')}
+                    className="flex items-center gap-2"
+                  >
+                    <Facebook className="w-4 h-4" />
+                    Facebook
+                  </Button>
+                  <Button
+                    variant={selectedFormat === 'instagram' ? 'default' : 'outline'}
+                    onClick={() => setSelectedFormat('instagram')}
+                    className="flex items-center gap-2"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    Instagram
+                  </Button>
+                  <Button
+                    variant={selectedFormat === 'shorts' ? 'default' : 'outline'}
+                    onClick={() => setSelectedFormat('shorts')}
+                    className="flex items-center gap-2"
+                  >
+                    <Youtube className="w-4 h-4" />
+                    Shorts
+                  </Button>
                 </div>
               </div>
 
-              {/* Contenido del anuncio */}
+              {/* Contenedor del anuncio */}
               <div className="p-4 space-y-4">
-                {/* Imagen */}
-                <div className="relative aspect-video w-full bg-gray-100 rounded-lg overflow-hidden">
+                <div 
+                  className="relative bg-gray-100 rounded-lg overflow-hidden"
+                  style={{
+                    aspectRatio: `${formatDimensions[selectedFormat].width} / ${formatDimensions[selectedFormat].height}`,
+                    maxWidth: '100%',
+                    maxHeight: '80vh'
+                  }}
+                >
                   {imageUrl && !imageError ? (
                     <img
+                      ref={imageRef}
                       src={imageUrl}
                       alt="Imagen del anuncio"
                       className="object-cover w-full h-full"
@@ -200,20 +299,24 @@ const CampaignSuccess: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Reacciones simuladas */}
-                <div className="flex items-center gap-4 text-gray-500 pt-4 border-t border-gray-100">
-                  <div className="flex items-center gap-1">
-                    <span>👍</span>
-                    <span className="text-sm">1.2K</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span>💬</span>
-                    <span className="text-sm">45</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span>↗️</span>
-                    <span className="text-sm">89</span>
-                  </div>
+                {/* Acciones de imagen */}
+                <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                  <Button
+                    onClick={handleGenerateImage}
+                    disabled={generationAttemptsLeft <= 0}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Generar nueva imagen ({generationAttemptsLeft} intentos)
+                  </Button>
+                  <Button
+                    onClick={handleDownloadImage}
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Descargar imagen
+                  </Button>
                 </div>
               </div>
             </div>
