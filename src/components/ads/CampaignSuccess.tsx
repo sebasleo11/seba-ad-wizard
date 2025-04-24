@@ -4,7 +4,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, Download, Mail, RefreshCw, Image as ImageIcon, 
   Target, DollarSign, MapPin, Users, Calendar, Brain,
-  Facebook, Instagram, Youtube
+  Facebook, Instagram, Youtube, Clock, Calendar as CalendarIcon,
+  TrendingUp, Sparkles
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import jsPDF from 'jspdf';
@@ -36,6 +37,23 @@ const formatDimensions = {
   shorts: { width: 1080, height: 1920 }
 };
 
+// Hook para generación de prompts IA (estructura preparada)
+const useAIPromptGenerator = (campaignData: CampaignData | null) => {
+  const generatePrompt = () => {
+    if (!campaignData) return '';
+    
+    return `
+      Objetivo: ${campaignData.objective}
+      Audiencia: ${campaignData.audience.location}, ${campaignData.audience.ageRange.join(', ')}, ${campaignData.audience.gender.join(', ')}
+      Intereses: ${campaignData.audience.interests.join(', ')}
+      Presupuesto: ${campaignData.budget}
+      Copy actual: ${campaignData.content.customText}
+    `;
+  };
+
+  return { generatePrompt };
+};
+
 const CampaignSuccess: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,6 +64,7 @@ const CampaignSuccess: React.FC = () => {
   const [selectedFormat, setSelectedFormat] = useState<FormatType>('facebook');
   const [generationAttemptsLeft, setGenerationAttemptsLeft] = useState(2);
   const imageRef = useRef<HTMLImageElement>(null);
+  const { generatePrompt } = useAIPromptGenerator(campaignData);
 
   useEffect(() => {
     const stateData = location.state?.data;
@@ -218,6 +237,17 @@ const CampaignSuccess: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-white py-12 px-4 sm:px-6 lg:px-8">
+      {/* Barra de progreso */}
+      <div className="max-w-6xl mx-auto mb-8">
+        <div className="bg-gray-200 rounded-full h-2.5">
+          <div 
+            className="bg-primary h-2.5 rounded-full transition-all duration-500" 
+            style={{ width: '100%' }}
+          />
+        </div>
+        <p className="text-sm text-gray-500 mt-2 text-right">Campaña generada al 100%</p>
+      </div>
+
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <span className="text-6xl mb-4 block">🎉</span>
@@ -231,7 +261,8 @@ const CampaignSuccess: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Vista previa del anuncio */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
+            {/* Mockup principal */}
             <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
               {/* Selector de formato */}
               <div className="p-4 border-b border-gray-200">
@@ -265,6 +296,20 @@ const CampaignSuccess: React.FC = () => {
 
               {/* Contenedor del anuncio */}
               <div className="p-4 space-y-4">
+                {/* Encabezado del anuncio */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-primary font-bold">SA</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Seba Ads Pro</h3>
+                      <p className="text-sm text-gray-500">Anuncio patrocinado • Publicado hace 3 min</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Imagen */}
                 <div 
                   className="relative bg-gray-100 rounded-lg overflow-hidden"
                   style={{
@@ -299,6 +344,22 @@ const CampaignSuccess: React.FC = () => {
                   </p>
                 </div>
 
+                {/* Interacciones */}
+                <div className="flex items-center gap-6 text-gray-500 pt-4 border-t border-gray-100">
+                  <button className="flex items-center gap-2 hover:text-primary">
+                    <span className="text-xl">👍</span>
+                    <span className="text-sm">1.2K</span>
+                  </button>
+                  <button className="flex items-center gap-2 hover:text-primary">
+                    <span className="text-xl">💬</span>
+                    <span className="text-sm">45</span>
+                  </button>
+                  <button className="flex items-center gap-2 hover:text-primary">
+                    <span className="text-xl">↗️</span>
+                    <span className="text-sm">89</span>
+                  </button>
+                </div>
+
                 {/* Acciones de imagen */}
                 <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
                   <Button
@@ -320,11 +381,62 @@ const CampaignSuccess: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Preview móvil */}
+            <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="font-semibold text-gray-900">Vista previa móvil</h3>
+              </div>
+              <div className="p-4">
+                <div className="relative bg-gray-100 rounded-lg overflow-hidden mx-auto" style={{ width: '300px', height: '600px' }}>
+                  {imageUrl && !imageError ? (
+                    <img
+                      src={imageUrl}
+                      alt="Imagen del anuncio"
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                      <ImageIcon className="w-8 h-8 mb-2" />
+                      <span className="text-sm">Imagen no disponible</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Panel de detalles */}
+          {/* Panel lateral */}
           <div className="space-y-6">
-            {/* Objetivo */}
+            {/* Tips de publicación */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Tips de publicación</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <CalendarIcon className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <p className="font-medium text-gray-900">Días recomendados</p>
+                    <p className="text-sm text-gray-600">Publica de lunes a viernes para mejor rendimiento</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <p className="font-medium text-gray-900">Horario ideal</p>
+                    <p className="text-sm text-gray-600">Entre las 19:00 y 21:00 hs.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <p className="font-medium text-gray-900">Mejor rendimiento</p>
+                    <p className="text-sm text-gray-600">Ideal para productos digitales y servicios locales</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Detalles de la campaña */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Target className="w-6 h-6 text-primary" />
@@ -333,7 +445,6 @@ const CampaignSuccess: React.FC = () => {
               <p className="text-gray-600">{campaignData.objective}</p>
             </div>
 
-            {/* Presupuesto */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <DollarSign className="w-6 h-6 text-primary" />
@@ -342,7 +453,6 @@ const CampaignSuccess: React.FC = () => {
               <p className="text-2xl font-bold text-gray-900">USD ${campaignData.budget}</p>
             </div>
 
-            {/* Audiencia */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Users className="w-6 h-6 text-primary" />
@@ -374,17 +484,15 @@ const CampaignSuccess: React.FC = () => {
               </div>
             </div>
 
-            {/* Recomendación de IA */}
-            <div className="bg-primary/5 rounded-xl p-6">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">🤖</span>
-                <div>
-                  <p className="text-sm text-gray-600">
-                    Te sugerimos publicar este anuncio entre las 19 y 21 hs. en Instagram para mayor rendimiento.
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Botón de IA (no funcional por ahora) */}
+            <Button
+              variant="outline"
+              className="w-full flex items-center gap-2 text-primary border-primary hover:bg-primary/5"
+              disabled
+            >
+              <Sparkles className="w-4 h-4" />
+              Conectar con inteligencia artificial para optimizar esta campaña
+            </Button>
 
             {/* Acciones */}
             <div className="flex flex-col gap-3">
