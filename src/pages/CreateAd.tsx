@@ -11,6 +11,7 @@ const CreateAd = () => {
   const [campaignData, setCampaignData] = useState<any>(null);
   const [showFinalStep, setShowFinalStep] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
 
   const handleStartClick = () => {
     setShowForm(true);
@@ -38,6 +39,13 @@ const CreateAd = () => {
       console.error('Error en el envío:', error);
       alert('Ocurrió un error al generar el contenido con IA');
     }
+  };
+
+  const updateCampaignData = (section: string, data: any) => {
+    setCampaignData(prev => ({
+      ...prev,
+      [section]: data
+    }));
   };
 
   return (
@@ -91,16 +99,32 @@ const CreateAd = () => {
       ) : showFinalStep ? (
         <FinalStep
           data={campaignData}
-          updateData={(section, data) => {
-            setCampaignData(prev => ({
-              ...prev,
-              [section]: data
-            }));
-          }}
+          updateData={updateCampaignData}
           onBack={() => setShowFinalStep(false)}
         />
       ) : (
         <CampaignKit campaignData={campaignData} />
+      )}
+
+      {campaignData?.copy && campaignData?.titulo && (
+        <div className="bg-white p-4 rounded shadow mt-6">
+          <h2 className="text-xl font-bold mb-2">{campaignData.titulo}</h2>
+          <p className="text-gray-700">{campaignData.copy}</p>
+        </div>
+      )}
+
+      {campaignData?.imagenes && campaignData.imagenes.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          {campaignData.imagenes.map((url: string, index: number) => (
+            <div key={index} className="rounded overflow-hidden shadow">
+              <img
+                src={url}
+                alt={`Imagen generada ${index + 1}`}
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          ))}
+        </div>
       )}
     </Layout>
   );
