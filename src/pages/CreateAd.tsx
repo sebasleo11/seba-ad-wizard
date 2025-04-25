@@ -33,8 +33,15 @@ const CreateAd = () => {
       }
 
       const result = await response.json();
+      console.log("Resultado recibido de n8n:", result);
+      // Verificar si la respuesta contiene los datos necesarios
+      if (!result.titulo || !result.copy || !result.imagenes || result.imagenes.length === 0) {
+        throw new Error('La respuesta no contiene todos los datos necesarios');
+      }
+
+      // Actualizar el estado con los datos de la campaña
       setCampaignData(result);
-      setShowFinalStep(true); // activa el paso final
+      setShowFinalStep(true);
     } catch (error) {
       console.error('Error en el envío:', error);
       alert('Ocurrió un error al generar el contenido con IA');
