@@ -131,7 +131,7 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
         throw new Error('Faltan datos requeridos para generar el contenido');
       }
 
-      const response = await fetch("http://localhost:5678/webhook/crear-copy-imagen", {
+      const response = await fetch("http://localhost:5678/webhook/generar-texto", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

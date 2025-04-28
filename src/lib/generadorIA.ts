@@ -1,6 +1,6 @@
 export async function generarCopyEImagen(formData: any) {
     try {
-      const response = await fetch('http://localhost:5678/webhook-test/generar-copy-imagen', {
+      const response = await fetch('http://localhost:5678/webhook/generar-texto', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
