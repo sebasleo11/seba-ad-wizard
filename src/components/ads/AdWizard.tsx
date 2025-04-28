@@ -16,6 +16,44 @@ interface AdWizardProps {
   onComplete: (data: any) => void;
 }
 
+interface BusinessData {
+  type: string;
+  name: string;
+  socialLinks: string;
+  description: string;
+}
+
+interface AudienceData {
+  location: string;
+  ageRanges: string[];
+  interests: string;
+  genders: string[];
+}
+
+interface ContentData {
+  autoGenerateText: boolean;
+  customText: string;
+  image: File | null;
+  imageUrl: string;
+  generatedCopies: string[];
+  generatedImages: string[];
+  destinationType: string;
+  destinationUrl: string;
+  cta: string;
+  imageWithText: boolean;
+  objective: string;
+  audience: string;
+  budget: string;
+}
+
+interface FormData {
+  business: BusinessData;
+  objective: string;
+  audience: AudienceData;
+  budget: number;
+  content: ContentData;
+}
+
 const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -23,7 +61,7 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
   const totalSteps = 5;
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     business: {
       type: '',
       name: '',
@@ -48,7 +86,10 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
       destinationType: 'website',
       destinationUrl: '',
       cta: 'Más info',
-      imageWithText: false
+      imageWithText: false,
+      objective: '',
+      audience: '',
+      budget: ''
     }
   });
 
@@ -90,7 +131,7 @@ const AdWizard: React.FC<AdWizardProps> = ({ onComplete }) => {
         throw new Error('Faltan datos requeridos para generar el contenido');
       }
 
-      const response = await fetch("https://leo11.app.n8n.cloud/webhook/crear-copy-imagen", {
+      const response = await fetch("http://localhost:5678/webhook/crear-copy-imagen", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

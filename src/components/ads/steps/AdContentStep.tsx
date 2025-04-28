@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
-import { Image, Link as LinkIcon, MessageCircle } from 'lucide-react';
+import { Image, Link as LinkIcon, MessageCircle, Loader2, Sparkles } from 'lucide-react';
 
 interface AdContentStepProps {
   data: {
@@ -58,7 +58,7 @@ const AdContentStep: React.FC<AdContentStepProps> = ({ data, businessData, updat
   const handleGenerateTexto = async () => {
     try {
       setError(null);
-      const response = await fetch('https://leo11.app.n8n.cloud/webhook/generar-texto', {
+      const response = await fetch('http://localhost:5678/webhook/generar-texto', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ const AdContentStep: React.FC<AdContentStepProps> = ({ data, businessData, updat
   const handleGenerateImagen = async () => {
     try {
       setError(null);
-      const response = await fetch('https://leo11.app.n8n.cloud/webhook/generar-imagen', {
+      const response = await fetch('http://localhost:5678/webhook/generar-imagen', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,10 +118,10 @@ const AdContentStep: React.FC<AdContentStepProps> = ({ data, businessData, updat
     }
   };
 
-  const handleGenerateTodo = async () => {
+  const handleGenerateContent = async () => {
+    setError(null);
     try {
-      setError(null);
-      const response = await fetch('https://leo11.app.n8n.cloud/webhook/generar-copy-imagen', {
+      const response = await fetch('http://localhost:5678/webhook/generar-anuncio', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ const AdContentStep: React.FC<AdContentStepProps> = ({ data, businessData, updat
           nombreNegocio: businessData.name,
           descripcionNegocio: businessData.description,
           imagenConTexto: data.imageWithText
-        })
+        }),
       });
 
       if (!response.ok) {
@@ -211,20 +211,20 @@ const AdContentStep: React.FC<AdContentStepProps> = ({ data, businessData, updat
             </Button>
 
             <Button
-              onClick={handleGenerateTodo}
-              disabled={isGenerating || !businessData.name || !businessData.description}
-              className="w-full bg-primary text-white"
+              onClick={handleGenerateContent}
+              className="w-full"
+              disabled={isGenerating}
             >
               {isGenerating ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Generando todo...</span>
-                </div>
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generando...
+                </>
               ) : (
-                <span>🧠🖼️ Generar texto + imagen con IA</span>
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generar texto + imagen con IA
+                </>
               )}
             </Button>
           </div>

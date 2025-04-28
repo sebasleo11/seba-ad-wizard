@@ -20,7 +20,8 @@ const CreateAd = () => {
 
   const handleComplete = async (data: any) => {
     try {
-      const response = await fetch('https://leo11.app.n8n.cloud/webhook/crear-campania', {
+      const response = await fetch('http://localhost:5678/webhook/generar-anuncio'
+, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
