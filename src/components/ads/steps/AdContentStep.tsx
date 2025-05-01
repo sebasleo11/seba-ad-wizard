@@ -1,25 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-const AdContentStep = ({ updateData }) => {
-  const [promptUsuario, setPromptUsuario] = useState('');
+const AdContentStep = () => {
+  const [prompt, setPrompt] = useState("");
   const [copys, setCopys] = useState<string[]>([]);
-  const [imagenes, setImagenes] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>([]);
   const [loadingText, setLoadingText] = useState(false);
   const [loadingImage, setLoadingImage] = useState(false);
+  const [error, setError] = useState("");
 
   const generarTexto = async () => {
     try {
       setLoadingText(true);
-      const res = await fetch('http://localhost:5678/webhook/crear-copy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptUsuario }),
+      setError("");
+
+      const res = await fetch("http://localhost:5678/webhook/crear-campania", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt }),
       });
+
+      if (!res.ok) throw new Error("No se pudo generar el texto");
+
       const data = await res.json();
-      console.log('Copys generados:', data);
+      console.log("Texto generado por IA:", data);
       setCopys([data.copy1, data.copy2]);
     } catch (err) {
-      console.error('Error generando texto:', err);
+      console.error("Error generando texto:", err);
+      setError("Error al generar el texto. Verificá que el servidor n8n esté activo.");
     } finally {
       setLoadingText(false);
     }
@@ -28,72 +37,67 @@ const AdContentStep = ({ updateData }) => {
   const generarImagen = async () => {
     try {
       setLoadingImage(true);
-      const prompt = promptUsuario || 'Producto destacado para redes sociales';
-      const res = await fetch('http://localhost:5678/webhook/crear-imagen', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      setError("");
+
+      const res = await fetch("http://localhost:5678/webhook/crear-imagen", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ prompt }),
       });
+
+      if (!res.ok) throw new Error("No se pudo generar la imagen");
+
       const data = await res.json();
-      console.log('Imágenes generadas:', data);
-      setImagenes([data.imagen1, data.imagen2]);
+      console.log("Imagen generada por IA:", data);
+      setImages([data.img1, data.img2]);
     } catch (err) {
-      console.error('Error generando imagen:', err);
+      console.error("Error generando imagen:", err);
+      setError("Error al generar la imagen. Verificá que el servidor n8n esté activo.");
     } finally {
       setLoadingImage(false);
     }
   };
 
-  const usarTexto = (texto: string) => {
-    updateData({ textoSeleccionado: texto });
-  };
-
-  const usarImagen = (url: string) => {
-    updateData({ imagenSeleccionada: url });
-  };
-
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <h2 className="text-xl font-semibold mb-4">Generar contenido publicitario con IA</h2>
+    <div className="max-w-2xl mx-auto p-4">
+      <h2 className="text-xl font-bold mb-4">Generar contenido publicitario con IA</h2>
 
       <input
         type="text"
         placeholder="Ej: Zapatos cómodos para todo el día"
-        value={promptUsuario}
-        onChange={(e) => setPromptUsuario(e.target.value)}
-        className="w-full border border-gray-300 rounded px-3 py-2 mb-4"
+        className="w-full p-2 border rounded mb-4"
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
       />
 
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-4 mb-4">
         <button
           onClick={generarTexto}
           disabled={loadingText}
-          className="btn bg-blue-600 text-white rounded px-4 py-2"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          {loadingText ? 'Generando...' : 'Generar texto con IA'}
+          {loadingText ? "Generando..." : "Generar texto con IA"}
         </button>
-
         <button
           onClick={generarImagen}
           disabled={loadingImage}
-          className="btn bg-green-600 text-white rounded px-4 py-2"
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
-          {loadingImage ? 'Generando...' : 'Generar imagen con IA'}
+          {loadingImage ? "Generando..." : "Generar imagen con IA"}
         </button>
       </div>
 
+      {error && <div className="bg-red-100 text-red-700 p-2 rounded mb-4">{error}</div>}
+
       <div className="mb-6">
-        <h3 className="font-bold mb-2">Textos generados</h3>
+        <h3 className="font-semibold">Textos generados</h3>
         {copys.length > 0 ? (
-          copys.map((texto, i) => (
-            <div key={i} className="border rounded p-3 mb-2">
-              <p className="mb-2">{texto}</p>
-              <button
-                onClick={() => usarTexto(texto)}
-                className="text-sm text-blue-600 underline"
-              >
-                Usar esta copia
-              </button>
+          copys.map((copy, index) => (
+            <div key={index} className="border p-2 rounded mt-2 bg-gray-50">
+              <p>{copy}</p>
+              <button className="text-sm text-blue-600 hover:underline mt-1">Usar esta copia</button>
             </div>
           ))
         ) : (
@@ -102,18 +106,12 @@ const AdContentStep = ({ updateData }) => {
       </div>
 
       <div>
-        <h3 className="font-bold mb-2">Imágenes generadas</h3>
-        {imagenes.length > 0 ? (
-          imagenes.map((url, i) => (
-            <div key={i} className="mb-4">
-              <img src={url} alt={`Generada ${i + 1}`} className="w-full rounded shadow" />
-              <p className="text-sm text-center mt-1">Imagen generada</p>
-              <button
-                onClick={() => usarImagen(url)}
-                className="text-sm text-green-600 underline block text-center mt-1"
-              >
-                Usar esta imagen
-              </button>
+        <h3 className="font-semibold">Imágenes generadas</h3>
+        {images.length > 0 ? (
+          images.map((url, index) => (
+            <div key={index} className="mt-4">
+              <img src={url} alt={`Generada ${index + 1}`} className="rounded shadow" />
+              <p className="text-sm text-gray-600 mt-1">Imagen generada</p>
             </div>
           ))
         ) : (
@@ -125,6 +123,7 @@ const AdContentStep = ({ updateData }) => {
 };
 
 export default AdContentStep;
+
 
 
 
