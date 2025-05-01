@@ -1,376 +1,132 @@
 import React, { useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Button } from '@/components/ui/button';
-import { Image, Link as LinkIcon, MessageCircle, Loader2, Sparkles } from 'lucide-react';
 
-interface AdContentStepProps {
-  data: {
-    autoGenerateText: boolean;
-    customText: string;
-    image: File | null;
-    imageUrl: string;
-    generatedCopies: string[];
-    generatedImages: string[];
-    destinationType: string;
-    destinationUrl: string;
-    cta: string;
-    imageWithText: boolean;
-  };
-  businessData: {
-    name: string;
-    socialLinks: string;
-    description: string;
-  };
-  updateData: (data: any) => void;
-  onGenerate: () => Promise<void>;
-  isGenerating: boolean;
-  onBack: () => void;
-  onFinish: () => void;
-}
+const AdContentStep = ({ updateData }) => {
+  const [promptUsuario, setPromptUsuario] = useState('');
+  const [copys, setCopys] = useState<string[]>([]);
+  const [imagenes, setImagenes] = useState<string[]>([]);
+  const [loadingText, setLoadingText] = useState(false);
+  const [loadingImage, setLoadingImage] = useState(false);
 
-const AdContentStep: React.FC<AdContentStepProps> = ({ data, businessData, updateData, onGenerate, isGenerating, onBack, onFinish }) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(data.imageUrl || null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      updateData({ image: file });
-
-      const fileUrl = URL.createObjectURL(file);
-      setPreviewUrl(fileUrl);
-    }
-  };
-
-  const handleUseCopy = (copy: string) => {
-    updateData({ customText: copy });
-  };
-
-  const handleUseImage = (imageUrl: string) => {
-    setPreviewUrl(imageUrl);
-    updateData({ imageUrl });
-  };
-
-  const handleGenerateTexto = async () => {
+  const generarTexto = async () => {
     try {
-      setError(null);
-      const response = await fetch('http://localhost:5678/webhook/generar-texto', {
+      setLoadingText(true);
+      const res = await fetch('http://localhost:5678/webhook/crear-copy', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nombreNegocio: businessData.name,
-          descripcionNegocio: businessData.description
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: promptUsuario }),
       });
-
-      if (!response.ok) {
-        throw new Error('Error al generar el texto');
-      }
-
-      const result = await response.json();
-      
-      if (!result.copies || result.copies.length === 0) {
-        throw new Error('No se generaron textos');
-      }
-
-      updateData({ generatedCopies: result.copies });
+      const data = await res.json();
+      console.log('Copys generados:', data);
+      setCopys([data.copy1, data.copy2]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al generar el texto');
-      console.error('Error al generar texto:', err);
+      console.error('Error generando texto:', err);
+    } finally {
+      setLoadingText(false);
     }
   };
 
-  const handleGenerateImagen = async () => {
+  const generarImagen = async () => {
     try {
-      setError(null);
-      const response = await fetch('http://localhost:5678/webhook/generar-imagen', {
+      setLoadingImage(true);
+      const prompt = promptUsuario || 'Producto destacado para redes sociales';
+      const res = await fetch('http://localhost:5678/webhook/crear-imagen', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nombreNegocio: businessData.name,
-          descripcionNegocio: businessData.description,
-          imagenConTexto: data.imageWithText
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
       });
-
-      if (!response.ok) {
-        throw new Error('Error al generar la imagen');
-      }
-
-      const result = await response.json();
-      
-      if (!result.imagenes || result.imagenes.length === 0) {
-        throw new Error('No se generaron imágenes');
-      }
-
-      updateData({ generatedImages: result.imagenes });
+      const data = await res.json();
+      console.log('Imágenes generadas:', data);
+      setImagenes([data.imagen1, data.imagen2]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al generar la imagen');
-      console.error('Error al generar imagen:', err);
+      console.error('Error generando imagen:', err);
+    } finally {
+      setLoadingImage(false);
     }
   };
 
-  const handleGenerateContent = async () => {
-    setError(null);
-    try {
-      const response = await fetch('http://localhost:5678/webhook/generar-anuncio', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nombreNegocio: businessData.name,
-          descripcionNegocio: businessData.description,
-          imagenConTexto: data.imageWithText
-        }),
-      });
+  const usarTexto = (texto: string) => {
+    updateData({ textoSeleccionado: texto });
+  };
 
-      if (!response.ok) {
-        throw new Error('Error al generar el contenido');
-      }
-
-      const result = await response.json();
-      
-      if (!result.copies || !result.imagenes || result.copies.length === 0 || result.imagenes.length === 0) {
-        throw new Error('No se generó el contenido completo');
-      }
-
-      updateData({
-        generatedCopies: result.copies,
-        generatedImages: result.imagenes
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al generar el contenido');
-      console.error('Error al generar contenido:', err);
-    }
+  const usarImagen = (url: string) => {
+    updateData({ imagenSeleccionada: url });
   };
 
   return (
-    <div className="space-y-8">
-      <Button variant="outline" onClick={onBack} className="w-full sm:w-auto">
-        ← Atrás
-      </Button>
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <h2 className="text-xl font-semibold mb-4">Generar contenido publicitario con IA</h2>
 
-      {data.autoGenerateText && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="font-medium">Imagen con texto integrado</Label>
-            <Switch
-              checked={data.imageWithText}
-              onCheckedChange={(checked) => updateData({ imageWithText: checked })}
-            />
-          </div>
-          <p className="text-sm text-gray-600">
-            {data.imageWithText 
-              ? "La IA generará una imagen con el texto del anuncio integrado"
-              : "La IA generará el texto y la imagen por separado"}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Button
-              onClick={handleGenerateTexto}
-              disabled={isGenerating || !businessData.name || !businessData.description}
-              className="w-full bg-primary text-white"
-            >
-              {isGenerating ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Generando texto...</span>
-                </div>
-              ) : (
-                <span>🧠 Generar solo texto con IA</span>
-              )}
-            </Button>
+      <input
+        type="text"
+        placeholder="Ej: Zapatos cómodos para todo el día"
+        value={promptUsuario}
+        onChange={(e) => setPromptUsuario(e.target.value)}
+        className="w-full border border-gray-300 rounded px-3 py-2 mb-4"
+      />
 
-            <Button
-              onClick={handleGenerateImagen}
-              disabled={isGenerating || !businessData.name || !businessData.description}
-              className="w-full bg-primary text-white"
-            >
-              {isGenerating ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Generando imagen...</span>
-                </div>
-              ) : (
-                <span>🖼️ Generar solo imagen con IA</span>
-              )}
-            </Button>
+      <div className="flex gap-4 mb-6">
+        <button
+          onClick={generarTexto}
+          disabled={loadingText}
+          className="btn bg-blue-600 text-white rounded px-4 py-2"
+        >
+          {loadingText ? 'Generando...' : 'Generar texto con IA'}
+        </button>
 
-            <Button
-              onClick={handleGenerateContent}
-              className="w-full"
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generando...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Generar texto + imagen con IA
-                </>
-              )}
-            </Button>
-          </div>
-          {error && (
-            <div className="mt-2 text-sm text-red-500 text-center">
-              {error}
-            </div>
-          )}
-          {(!businessData.name || !businessData.description) && (
-            <div className="mt-2 text-sm text-yellow-500 text-center">
-              Completa la información de tu negocio para generar contenido
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Sección de subida manual de imagen */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label className="font-medium">Subir imagen manualmente</Label>
-        </div>
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-              id="image-upload"
-            />
-            <Button
-              variant="outline"
-              onClick={() => document.getElementById('image-upload')?.click()}
-              className="w-full sm:w-auto"
-            >
-              <Image className="w-4 h-4 mr-2" />
-              Subir imagen
-            </Button>
-          </div>
-          
-          {previewUrl && (
-            <div className="mt-4">
-              <div className="relative aspect-video w-full max-w-2xl mx-auto">
-                <img
-                  src={previewUrl}
-                  alt="Vista previa de la imagen"
-                  className="object-cover rounded-lg w-full h-full"
-                />
-              </div>
-              <p className="text-sm text-gray-500 mt-2 text-center">
-                Vista previa de la imagen seleccionada
-              </p>
-            </div>
-          )}
-        </div>
+        <button
+          onClick={generarImagen}
+          disabled={loadingImage}
+          className="btn bg-green-600 text-white rounded px-4 py-2"
+        >
+          {loadingImage ? 'Generando...' : 'Generar imagen con IA'}
+        </button>
       </div>
 
-      {data.autoGenerateText && data.generatedCopies.length > 0 && !data.imageWithText && (
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="font-medium">Opciones de texto generadas</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.generatedCopies.map((copy, index) => (
-                <div key={`copy-${index}`} className="border rounded-lg p-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label>Opción {index + 1}</Label>
-                    <p className="text-sm text-gray-600">{copy}</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => handleUseCopy(copy)}
-                  >
-                    Usar este copy
-                  </Button>
-                </div>
-              ))}
+      <div className="mb-6">
+        <h3 className="font-bold mb-2">Textos generados</h3>
+        {copys.length > 0 ? (
+          copys.map((texto, i) => (
+            <div key={i} className="border rounded p-3 mb-2">
+              <p className="mb-2">{texto}</p>
+              <button
+                onClick={() => usarTexto(texto)}
+                className="text-sm text-blue-600 underline"
+              >
+                Usar esta copia
+              </button>
             </div>
-          </div>
-        </div>
-      )}
+          ))
+        ) : (
+          <p className="text-gray-500">Aún no se ha generado</p>
+        )}
+      </div>
 
-      {data.autoGenerateText && data.generatedImages.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="font-medium">
-            {data.imageWithText ? "Imágenes generadas con texto integrado" : "Opciones de imagen generadas"}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data.generatedImages.map((imageUrl, index) => {
-              const isValidUrl = imageUrl && 
-                typeof imageUrl === 'string' && 
-                (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) &&
-                imageUrl.length > 10;
-
-              return (
-                <div key={`image-${index}`} className="border rounded-lg p-4 space-y-4">
-                  <div className="border rounded-lg overflow-hidden bg-gray-50 relative">
-                    {isValidUrl ? (
-                      <>
-                        <img
-                          src={imageUrl}
-                          alt={`Imagen generada ${index + 1}`}
-                          className="w-full h-[180px] object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const errorDiv = document.createElement('div');
-                            errorDiv.className = 'w-full h-[180px] flex items-center justify-center bg-gray-100';
-                            errorDiv.innerHTML = '<p class="text-sm text-gray-500">No se pudo cargar la imagen</p>';
-                            target.parentNode?.insertBefore(errorDiv, target.nextSibling);
-                          }}
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 opacity-0 transition-opacity duration-200 hover:opacity-100">
-                          <p className="text-sm text-gray-500">Haz clic para previsualizar</p>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-full h-[180px] flex items-center justify-center bg-gray-100">
-                        <p className="text-sm text-gray-500">Imagen no disponible</p>
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => isValidUrl && handleUseImage(imageUrl)}
-                    disabled={!isValidUrl}
-                  >
-                    {isValidUrl ? "Usar esta imagen" : "Imagen no disponible"}
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      <Button onClick={onFinish} className="w-full sm:w-auto bg-primary hover:bg-primary/90">
-        Finalizar
-      </Button>
+      <div>
+        <h3 className="font-bold mb-2">Imágenes generadas</h3>
+        {imagenes.length > 0 ? (
+          imagenes.map((url, i) => (
+            <div key={i} className="mb-4">
+              <img src={url} alt={`Generada ${i + 1}`} className="w-full rounded shadow" />
+              <p className="text-sm text-center mt-1">Imagen generada</p>
+              <button
+                onClick={() => usarImagen(url)}
+                className="text-sm text-green-600 underline block text-center mt-1"
+              >
+                Usar esta imagen
+              </button>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500">Aún no se ha generado</p>
+        )}
+      </div>
     </div>
   );
 };
 
 export default AdContentStep;
+
+
 
 
 
